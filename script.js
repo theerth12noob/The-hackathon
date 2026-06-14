@@ -186,34 +186,34 @@ var questions = [
     key: "space", label: "Question 1 of 4",
     text: "How much space do you have?",
     options: [
-      { val: "windowsill", name: "Windowsill", sub: "A small sill or shelf", icon: "icon-windowsill.png" },
-      { val: "balcony", name: "Balcony", sub: "Outdoor or semi-outdoor", icon: "icon-balcony.png" },
-      { val: "room", name: "Full Room", sub: "A dedicated indoor space", icon: "icon-room.png" }
+      { val: "windowsill", name: "Windowsill", sub: "A small sill or shelf", emoji: "🪟" },
+      { val: "balcony", name: "Balcony", sub: "Outdoor or semi-outdoor", emoji: "🪴" },
+      { val: "room", name: "Full Room", sub: "A dedicated indoor space", emoji: "🏠" }
     ]
   },
   {
     key: "light", label: "Question 2 of 4",
     text: "How much natural light do you get?",
     options: [
-      { val: "low", name: "Low", sub: "Mostly shaded or north-facing", icon: "icon-lowlight.png" },
-      { val: "medium", name: "Medium", sub: "Indirect or filtered sunlight", icon: "icon-medlight.png" },
-      { val: "lots", name: "Lots", sub: "Direct sun for 6+ hours a day", icon: "icon-lotslight.png" }
+      { val: "low", name: "Low", sub: "Mostly shaded or north-facing", emoji: "☁️" },
+      { val: "medium", name: "Medium", sub: "Indirect or filtered sunlight", emoji: "⛅" },
+      { val: "lots", name: "Lots", sub: "Direct sun for 6+ hours a day", emoji: "☀️" }
     ]
   },
   {
     key: "exp", label: "Question 3 of 4",
     text: "What's your growing experience?",
     options: [
-      { val: "beginner", name: "Beginner", sub: "New to growing plants", icon: "icon-beginner.png" },
-      { val: "pro", name: "Pro", sub: "I've grown things before", icon: "icon-pro.png" }
+      { val: "beginner", name: "Beginner", sub: "New to growing plants", emoji: "🌱" },
+      { val: "pro", name: "Pro", sub: "I've grown things before", emoji: "🧑‍🌾" }
     ]
   },
   {
     key: "time", label: "Question 4 of 4",
     text: "How much time can you spare per week?",
     options: [
-      { val: "minimal", name: "Minimal", sub: "Less than 30 minutes", icon: "icon-minimal.png" },
-      { val: "moderate", name: "Moderate", sub: "A couple of hours", icon: "icon-moderate.png" }
+      { val: "minimal", name: "Minimal", sub: "Less than 30 minutes", emoji: "⚡" },
+      { val: "moderate", name: "Moderate", sub: "A couple of hours", emoji: "⏳" }
     ]
   }
 ];
@@ -316,7 +316,7 @@ function renderQ() {
       '<span class="opt-name">' + o.name + '</span>' +
       '<span class="opt-sub">' + o.sub + '</span>' +
       '</div>' +
-      '<div class="opt-icon"><img src="' + o.icon + '" alt="' + o.name + '" style="width:24px; height:24px; object-fit:contain;"></div>' +
+      '<div class="opt-emoji" style="font-size: 22px; margin-left: auto; padding-left: 10px;">' + o.emoji + '</div>' +
       '</button>';
   }
 
@@ -535,7 +535,6 @@ function initInteractiveCards() {
     card.style.transformOrigin = 'center center';
     card.style.transition = 'box-shadow 0.3s cubic-bezier(0.25, 1, 0.5, 1)';
 
-    // Kinetic state trackers
     let currentX = 0, currentY = 0;
     let currentTiltX = 0, currentTiltY = 0;
 
@@ -548,40 +547,33 @@ function initInteractiveCards() {
     let animFrameId = null;
     let isHovering = false;
 
-    // Hooke's Law Constants for heavy inertia mass tracking
-    const stiffness = 0.06; // Spring snap tension
-    const damping = 0.72; // Resistance value preventing loose hyper-bouncing
-    const mass = 1.8;  // Simulated heavy weight. High numbers create massive force latency drag
+    const stiffness = 0.06;
+    const damping = 0.72;
+    const mass = 1.8;
 
     function updateSprings() {
-      // 1. Calculate spring displacement force
       let forceX = (targetX - currentX) * stiffness;
       let forceY = (targetY - currentY) * stiffness;
       let forceTX = (targetTiltX - currentTiltX) * stiffness;
       let forceTY = (targetTiltY - currentTiltY) * stiffness;
 
-      // 2. Acceleration = Force / Mass
       let ax = forceX / mass;
       let ay = forceY / mass;
       let atx = forceTX / mass;
       let aty = forceTY / mass;
 
-      // 3. Update velocity matrices with damping friction applied
       velX = (velX + ax) * damping;
       velY = (velY + ay) * damping;
       velTiltX = (velTiltX + atx) * damping;
       velTiltY = (velTiltY + aty) * damping;
 
-      // 4. Update coordinates position
       currentX += velX;
       currentY += velY;
       currentTiltX += velTiltX;
       currentTiltY += velTiltY;
 
-      // 5. Apply matrix properties
       card.style.transform = `perspective(1200px) rotateX(${currentTiltX.toFixed(3)}deg) rotateY(${currentTiltY.toFixed(3)}deg) translate3d(${currentX.toFixed(2)}px, ${currentY.toFixed(2)}px, 8px)`;
 
-      // If we've let go and the card has basically settled back to rest, stop looping frames
       if (!isHovering &&
         Math.abs(velX) < 0.001 && Math.abs(velY) < 0.001 &&
         Math.abs(velTiltX) < 0.001 && Math.abs(velTiltY) < 0.001) {
@@ -593,8 +585,6 @@ function initInteractiveCards() {
       animFrameId = requestAnimationFrame(updateSprings);
     }
 
-    // Clear old duplicate listeners by cloning and replacing if necessary, 
-    // or simply attach clean listeners if newly rendered.
     const onMouseMove = function (e) {
       isHovering = true;
       var rect = card.getBoundingClientRect();
@@ -605,7 +595,6 @@ function initInteractiveCards() {
       var dx = (x / rect.width) - 0.5;
       var dy = (y / rect.height) - 0.5;
 
-      // Emberco bounds: tight physics tilt with heavier translation shaking offset
       var maxTiltAngle = 9;
       var maxShiftAmt = 16;
 
